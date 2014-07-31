@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "<%= name %>",
+  "description": "<%= description %>",
+  "version": "<%= version %>",
+  "icons": {
+    "128": "img/appIcon.png"
+  },
+  "background": {
+    "scripts": [
+      "js/block.js"
+    ]
+  },
+  "permissions": [
+    "tabs",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "browser_action": {
+    "default_popup": "html/popup.html"
+  },
+  "web_accessible_resources": [
+  ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}

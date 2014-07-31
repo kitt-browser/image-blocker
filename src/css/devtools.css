@@ -1,0 +1,360 @@
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto Regular'), local('Roboto-Regular'), url(http://themes.googleusercontent.com/static/fonts/roboto/v11/2UX7WLTfW3W8TclTUvlFyQ.woff) format('woff');
+}
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Roboto Bold'), local('Roboto-Bold'), url(http://themes.googleusercontent.com/static/fonts/roboto/v11/d-6IYplOFocCacKzxwXSOD8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0 !important;
+  padding: 40px 0 150px 0 !important;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+ul {
+  margin: 0;
+}
+
+/* Common */
+
+.dev-tools-wrapper {
+
+}
+
+.search,
+.article-tree,
+.details {
+  padding: 0 10px;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.scrollable-wrapper {
+  padding: 10px;
+  position: absolute; /* this will allow the tree wrapper to correctly expand */
+}
+
+.details .scrollable-wrapper {
+  padding-top: 34px;
+}
+
+/* Search field and navigation */
+
+.search {
+  padding: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 30px;
+  width: 100%;
+  overflow: hidden;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.search input {
+  height: 100%;
+  outline: 0;
+  line-height: 30px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  padding: 0 10px;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+}
+
+.search .search-wrapper {
+  overflow: auto;
+}
+
+.search .controls-wrapper {
+  float: right;
+}
+
+.search .btn-control {
+  height: 100%;
+  line-height: 30px;
+  display: inline-block;
+  width: 30px;
+  float: right;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  text-indent: -999px;
+}
+
+.search .btn-control:before,
+.search .btn-control:after {
+  content: "";
+  display: block;
+  background-color: #bbb;
+  height: 2px;
+  width: 12px;
+  transform-origin: 50% 50%;
+  -webkit-transform-origin: 50% 50%;
+  top: 50%;
+  left: 50%;
+  margin: -1px 0 0 -7px;
+  position: absolute;
+}
+
+.search .btn-control:before {
+  margin-top: -5px;
+}
+
+.search .btn-control:after {
+  margin-top: 2px;
+}
+
+.search .btn-next:after,
+.search .btn-prev:before {
+  -webkit-transform: rotate(-45deg);
+}
+
+.search .btn-next:before,
+.search .btn-prev:after {
+  -webkit-transform: rotate(45deg);
+}
+/*
+.search .btn-prev {
+  margin-right: 10px;
+}
+*/
+/* DOM item details, full view */
+
+.details {
+  border-top: 1px solid #eee;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 24px;
+  width: 100%;
+  overflow: hidden;
+  background-color: #fafafa;
+  padding: 0;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  word-break: break-all;
+  transition: height 0.3s ease-in;
+  -webkit-transition: height 0.3s ease-in;
+}
+
+.detail-expanded .details {
+  height: 150px;
+}
+
+.detail-controls {
+  position: absolute;
+  height: 24px;
+  top: 0;
+  right: 0;
+  width: 100%;
+  background-color: #fff;
+}
+
+.detail-controls .controls-block {
+  display: block;
+  width: 24px;
+  height: 24px;
+  position: relative;
+  line-height: 24px;
+  text-align: center;
+  float: left;
+}
+
+.detail-controls .controls-block.minimize-toggle {
+  float: right;
+}
+
+.detail-controls .controls-block.active {
+  background-color: #fafafa;
+}
+
+.detail-controls .minimize-toggle:before {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #bbb;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -3px 0 0 -6px;
+  transition: transform 0.3s ease-out;
+  -webkit-transition: -webkit-transform 0.3s ease-out;
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+}
+
+.detail-expanded .detail-controls .minimize-toggle:before {
+  transform: rotate(0deg);
+  -webkit-transform: rotate(0deg);
+}
+
+/* DOM tree  */
+
+.article-tree {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  top: 30px;
+  bottom: 24px;
+  overflow: hidden;
+  padding: 0;
+  font-size: 12px;
+  transition: bottom 0.3s ease-in;
+  -webkit-transition: bottom 0.3s ease-in;
+}
+
+.detail-expanded .article-tree {
+  bottom: 150px;
+}
+
+.tree li {
+  list-style-type: none;
+  margin: 0;
+  padding: 10px 5px 0 5px;
+  position: relative;
+}
+
+.tree li:before,
+.tree li:after {
+  content: '';
+  left: -20px;
+  position: absolute;
+  right: auto;
+}
+
+.tree li:before {
+  border-left: 1px solid #999;
+  bottom: 50px;
+  height: 100%;
+  top: 0;
+  width: 1px;
+}
+
+.tree li:after {
+  border-top: 1px solid #999;
+  height: 20px;
+  top: 25px;
+  width: 25px;
+}
+
+.tree li span.node {
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border: 1px solid #999;
+  display: inline-block;
+  padding: 3px 8px;
+  text-decoration: none;
+}
+
+.tree li.parent_li > span {
+  cursor: pointer;
+}
+
+.tree > ul > li:before,
+.tree > ul > li:after {
+  border: 0;
+}
+
+.tree li:last-child::before {
+  height: 25px;
+}
+
+.tree .node.parent.collapsed:before {
+  content: '\002B';
+}
+
+.tree .node.parent:before {
+  content: '\2212';
+}
+
+.tree .node .classes {
+  color: #4775FF;
+}
+
+.tree .node .id {
+  color: #00934A;
+  font-family: 'Courier New';
+}
+
+.tree .node.selected {
+  border: 1px solid red;
+  color: red;
+}
+
+.tree > ul {
+  padding-left: 0;
+}
+
+/* Landscape */
+
+@media screen
+and (orientation:landscape) {
+  .search {
+    right: 150px;
+    width: auto;
+  }
+
+  .article-tree {
+    right: 150px;
+    width: auto;
+    height: 100%;
+    bottom: 0;
+  }
+
+  .detail-expanded .details {
+    height: auto;
+  }
+
+  .details {
+    top: 0;
+    bottom: 0;
+    height: auto;
+    right: 0;
+    width: 150px;
+    left: auto;
+    border-top: 0;
+    border-left: 1px solid #eee;
+  }
+
+  .detail-expanded .details {
+    width: 150px;
+  }
+
+  .detail-controls {
+    top: auto;
+    bottom: 0;
+    display: none;
+  }
+
+  .details .scrollable-wrapper {
+    padding-top: 10px;
+  }
+
+  .detail-controls .controls-block.minimize-toggle {
+    float: left;
+  }
+
+}
