@@ -1,6 +1,6 @@
 {
   "name": "image-blocker",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Image-blocker saves mobile data by blocking images.",
   "private": "true",
   "scripts": {
