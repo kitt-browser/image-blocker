@@ -11,6 +11,18 @@
       "js/block.js"
     ]
   },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "js/libs.js",
+        "js/content.js"
+      ]
+    }
+  ],
   "permissions": [
     "tabs",
     "http://*/*",

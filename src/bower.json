@@ -1,13 +1,11 @@
 {
   "name": "image-blocker",
   "dependencies": {
-    "underscore": "~1.6.0"
   },
   "devDependencies": [],
   "install": {
     "path": "vendor",
-    "sources": {
-    }
+    "sources": {}
   },
   "private": true
 }

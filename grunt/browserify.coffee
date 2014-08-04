@@ -4,10 +4,17 @@ module.exports = (grunt) ->
   dev:
     files: [
       {src: '<%= srcDir %>/js/block.coffee', dest: "<%= buildDir %>/js/block.js"}
+      {src: '<%= srcDir %>/js/content.coffee', dest: "<%= buildDir %>/js/content.js"}
     ]
     options:
       watch: true
       transform: TRANSFORMS
+      external: [
+        'jquery'
+        '_'
+        'URI'
+      ]
+
 
   dist:
     files: "<%= browserify.dev.files %>",
@@ -24,6 +31,12 @@ module.exports = (grunt) ->
       transform: ['coffeeify', 'cssify']
       external: "<%= browserify.dev.options.external %>"
 
-  libs:
+   libs:
     src: []
     dest: "<%= buildDir %>/js/libs.js"
+    options:
+      require: [
+        'jquery'
+        'lodash'
+        'URIjs'
+      ]

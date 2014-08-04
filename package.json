@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/image-blocker/dev-tools",
   "devDependencies": {
-    "angular": "^1.2.18",
     "bower-installer": "^0.7.1",
     "chai": "^1.9.1",
     "coffeeify": "^0.6.0",
@@ -44,5 +43,8 @@
     "sinon": "^1.10.1",
     "time-grunt": "^0.3.2",
     "uglifyify": "^2.1.1"
+  },
+  "dependencies": {
+    "URIjs": "^1.13.2"
   }
 }
