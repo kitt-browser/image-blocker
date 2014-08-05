@@ -18,6 +18,7 @@ _imgExtensionsRegexp = new RegExp('.+(' + ([
 # `[{url: <string>, tabId: <id>}]`
 g_allowedURLs = []
 
+# Stats
 g_data = {
   totalBlocked: 0
   totalDownloaded: 0
@@ -31,6 +32,7 @@ sendMessage = (msg, callback) ->
       callback?(response)
 
 
+# Send a HEAD request (used to get Content-Length).
 getHeadersForUrl = (url, callback) ->
   xhr = $.ajax(type: "HEAD", async: true, url: url)
   .done (data, status) ->
@@ -67,7 +69,7 @@ chrome.webRequest.onBeforeRequest.addListener (details) ->
     # Determine the size of the blocked image (to show stats to the user).
     getHeadersForUrl details.url, (err, headers) ->
       if err then return
-      # Get Content Length header value as a number.
+      # Get Content Length header value (as a number).
       matches = headers.match /.*Content-Length:.*([0-9])+.*/g, '$1'
       return unless matches?.length > 0
       size = Number(matches[0].split(':')[1])
