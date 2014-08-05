@@ -17,6 +17,7 @@ _imgExtensionsRegexp = new RegExp('.+(' + ([
 # Whitelisted domains.
 # `[{url: <string>, tabId: <id>}]`
 g_allowedURLs = []
+
 g_data = {
   totalBlocked: 0
   totalDownloaded: 0
@@ -63,6 +64,7 @@ chrome.webRequest.onBeforeRequest.addListener (details) ->
     not allowed && details.method == 'GET'
 
   if shouldBlock
+    # Determine the size of the blocked image (to show stats to the user).
     getHeadersForUrl details.url, (err, headers) ->
       if err then return
       # Get Content Length header value as a number.
@@ -70,8 +72,6 @@ chrome.webRequest.onBeforeRequest.addListener (details) ->
       return unless matches?.length > 0
       size = Number(matches[0].split(':')[1])
       g_data.totalBlocked += size
-  else
-    console.log 'not blocking url', details.url
 
   return {cancel: shouldBlock }
 , {

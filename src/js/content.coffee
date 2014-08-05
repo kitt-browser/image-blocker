@@ -33,15 +33,12 @@ reloadImage = (url) ->
   return unless $img.length
 
   imgSrc = $img.attr('src')
-  d = new Date()
 
-  # We add some query salt (current timestamp) to the URL to force reload.
-  if ~imgSrc.indexOf('?')
-    $img.attr('src', "#{imgSrc}&#{d.getTime()}")
-  else
-    $img.attr('src', "#{imgSrc}?#{d.getTime()}")
+  $img.attr('src', '')
+  setTimeout ->
+    $img.attr('src', imgSrc)
+  , 100
 
-  console.log 'updated image url', $img.attr('src')
 
 chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
   console.log('message received:', request.command, request)
