@@ -1,5 +1,8 @@
+$ = require('jquery')
 _ = require('lodash')
 URI = require('URIjs')
+
+$.support.cors = true
 
 # We don't have `accept` header yet so as a temporary workaround
 # we're blocking by extension.
@@ -13,7 +16,11 @@ _imgExtensionsRegexp = new RegExp('.+(' + ([
 
 # Whitelisted domains.
 # `[{url: <string>, tabId: <id>}]`
-allowedURLs = []
+g_allowedURLs = []
+g_data = {
+  totalBlocked: 0
+  totalDownloaded: 0
+}
 
 
 sendMessage = (msg, callback) ->
@@ -23,12 +30,49 @@ sendMessage = (msg, callback) ->
       callback?(response)
 
 
+getHeadersForUrl = (url, callback) ->
+  xhr = $.ajax(type: "HEAD", async: true, url: url)
+  .done (data, status) ->
+    callback?(null, xhr.getAllResponseHeaders())
+  .fail (err) ->
+    callback?(err)
+
+
+###
+chrome.webRequest.onHeadersReceived.addListener (details) ->
+  return unless details['responseHeaders']?['Content-Length']?
+  console.log 'type', typeof(details['responseHeaders']['Content-Length'])
+  try
+    size = parseInt(details['responseHeaders']['Content-Length'])
+  catch e
+    console.log 'exception'
+  g_data.totalDownloaded += (size or 0)
+###
+
+escapeRegExp = (str) ->
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
+
+
 chrome.webRequest.onBeforeRequest.addListener (details) ->
-  console.log 'on before request'
   domain = details.url.split('?')[0]
+
   # Is the domain whitelisted?
-  allowed = _.find allowedURLs, ({url}) -> domain.match(new RegExp(".*#{url}$"))
-  shouldBlock = Boolean(domain.match(_imgExtensionsRegexp)) && not allowed
+  allowed = _.find g_allowedURLs, ({url}) ->
+    domain.match(new RegExp(".*#{escapeRegExp(url)}$"))
+  shouldBlock = Boolean(domain.match(_imgExtensionsRegexp)) &&
+    not allowed && details.method == 'GET'
+
+  if shouldBlock
+    getHeadersForUrl details.url, (err, headers) ->
+      if err then return
+      # Get Content Length header value as a number.
+      matches = headers.match /.*Content-Length:.*([0-9])+.*/g, '$1'
+      return unless matches?.length > 0
+      size = Number(matches[0].split(':')[1])
+      g_data.totalBlocked += size
+  else
+    console.log 'not blocking url', details.url
+
   return {cancel: shouldBlock }
 , {
   urls: ["<all_urls>"]
@@ -45,21 +89,25 @@ menu = chrome.contextMenus.create({
 
 chrome.contextMenus.onClicked.addListener (info, tab) ->
   return unless (info.menuItemId == menu)
-  console.log 'force load image', arguments
   sendMessage {command: 'getImageURL', src: info.linkUrl}, (url) ->
-    console.log('allowing url', url)
     return unless url?
     domain = url.split('?')[0]
     # Whitelist the URL domain before reloading (otherwise it would just
     # get blocked again, duh).
-    allowedURLs.push({url: encodeURI(domain), tabId: tab.id})
-    console.log('whitelisting', url, tab.id)
+    g_allowedURLs.push({url: encodeURI(domain), tabId: tab.id})
     sendMessage {command: 'reloadImage', src: url}
 
 
-chrome.runtime.onMessage.addListener (request) ->
+chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
   console.log 'received message', request
   switch (request.command)
     when 'clean'
-      allowedURLs = []
+      g_allowedURLs = []
       #_.filter allowedURLs, ({tabId}) -> tabId != sender.tab.id
+      break
+    when 'data:info'
+      sendResponse {
+        blocked: g_data.totalBlocked
+        received: g_data.totalDownloaded
+      }
+      break

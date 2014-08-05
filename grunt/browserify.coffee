@@ -5,12 +5,13 @@ module.exports = (grunt) ->
     files: [
       {src: '<%= srcDir %>/js/block.coffee', dest: "<%= buildDir %>/js/block.js"}
       {src: '<%= srcDir %>/js/content.coffee', dest: "<%= buildDir %>/js/content.js"}
+      {src: '<%= srcDir %>/js/popup.coffee', dest: "<%= buildDir %>/js/popup.js"}
     ]
     options:
       watch: true
       transform: TRANSFORMS
       external: [
-        'jquery'
+        '$'
         '_'
         'URI'
       ]

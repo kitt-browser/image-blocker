@@ -1,6 +1,7 @@
 $ = require('jquery')
 URI = require('URIjs')
 
+$.support.cors = true
 
 
 getImageURL = (url) ->
@@ -10,8 +11,10 @@ getImageURL = (url) ->
   uri = new URI(url)
   relativeURL = uri.relativeTo(uri.scheme() + '://' + uri.authority())
     .toString()
-  $img = $("*[src='#{url}'], *[href$='#{url}'], " +
-    "*[src='#{relativeURL}'], *[href$='#{relativeURL}']")
+  $img = $("*[src$='#{url}'], *[href$='#{url}'], " +
+    "*[src$='#{relativeURL}'], *[href$='#{relativeURL}']")
+
+  console.log 'searching for image...', $img.length
 
   return null unless $img.length
 
@@ -38,6 +41,7 @@ reloadImage = (url) ->
   else
     $img.attr('src', "#{imgSrc}?#{d.getTime()}")
 
+  console.log 'updated image url', $img.attr('src')
 
 chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
   console.log('message received:', request.command, request)
