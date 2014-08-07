@@ -57,7 +57,7 @@ chrome.webRequest.onBeforeRequest.addListener (details) ->
   shouldBlock = Boolean(domain.match(_imgExtensionsRegexp)) &&
     not allowed && details.method == 'GET'
 
-  console.log 'url', details.url, shouldBlock
+  # console.log 'url', details.url, shouldBlock
 
   if shouldBlock
     # Determine the size of the blocked image (to show stats to the user).
@@ -84,12 +84,14 @@ menu = chrome.contextMenus.create({
 
 
 whitelistUrl = (url) ->
-  domain = url.split('?')[0]
-  g_allowedURLs.push({url: encodeURI(domain)})
-  console.log 'whitelisted URL', domain
+  domain = encodeURI(url.split('?')[0])
+  if g_allowedURLs.indexOf(domain) < 0
+    g_allowedURLs.push({url: domain})
+    console.log 'whitelisted URL', domain
 
 
 chrome.contextMenus.onClicked.addListener (info, tab) ->
+  console.log 'info', info
   return unless info.srcUrl
   whitelistUrl(info.srcUrl)
   sendMessage {command: 'reload:image', src: info.srcUrl}
@@ -110,5 +112,7 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
       }
       break
     when 'url:whitelist'
-      whitelistUrl(request.srcUrl)
+      # TODO: We're getting junk "urls" such as "initial" or "none" here.
+      # Filter what we're sending.
+      whitelistUrl(request.url)
 

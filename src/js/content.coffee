@@ -42,7 +42,6 @@ reloadCSSBackgroundImages = ->
           }, ->
           rule.style['background-image'] = ''
           setTimeout ->
-            console.log 'reloading bkg image rule'
             rule.style['background-image'] = old
           , 100
 
