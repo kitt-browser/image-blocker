@@ -11,7 +11,7 @@ _imgExtensionsRegexp = new RegExp('.+(' + ([
   'png'
   'gif'
   'tiff'
-].join('|')) + ')$')
+].join('|')) + ')$', 'i')
 
 
 # Whitelisted domains.
@@ -28,7 +28,7 @@ g_data = {
 sendMessage = (msg, callback) ->
   chrome.tabs.query {active: true, currentWindow: true}, (tabs) ->
     chrome.tabs.sendMessage tabs[0].id, msg, (response) ->
-      console.log(response)
+      console.log('response', response)
       callback?(response)
 
 
@@ -50,7 +50,7 @@ escapeRegExp = (str) ->
 
 
 chrome.webRequest.onBeforeRequest.addListener (details) ->
-  domain = details.url.split('?')[0]
+  domain = encodeURI(details.url.split('?')[0])
   # Is the domain whitelisted?
   allowed = _.find g_allowedURLs, ({url}) ->
     domain.match(new RegExp(".*#{escapeRegExp(url)}$"))
@@ -83,16 +83,17 @@ menu = chrome.contextMenus.create({
 })
 
 
+whitelistUrl = (url) ->
+  domain = url.split('?')[0]
+  g_allowedURLs.push({url: encodeURI(domain)})
+  console.log 'whitelisted URL', domain
+
+
 chrome.contextMenus.onClicked.addListener (info, tab) ->
-  console.log 'info', info
-  return unless (info.menuItemId == menu)
-  sendMessage {command: 'getImageURL', src: info.linkUrl}, (url) ->
-    return unless url?
-    domain = url.split('?')[0]
-    # Whitelist the URL domain before reloading (otherwise it would just
-    # get blocked again, duh).
-    g_allowedURLs.push({url: encodeURI(domain), tabId: tab.id})
-    sendMessage {command: 'reload:image', src: url}
+  return unless info.srcUrl
+  whitelistUrl(info.srcUrl)
+  sendMessage {command: 'reload:image', src: info.srcUrl}
+  return
 
 
 chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
@@ -109,6 +110,5 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
       }
       break
     when 'url:whitelist'
-      console.log 'whitelisting URL', request.url
-      g_allowedURLs.push({url: encodeURI(request.url)})
+      whitelistUrl(request.srcUrl)
 

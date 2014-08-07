@@ -3,13 +3,17 @@ URI = require('URIjs')
 _ = require('lodash')
 
 
+getRelativeUrl = (url) ->
+  uri = new URI(url)
+  domainMatch = new RegExp("#{uri.scheme()}:\/\/[^\/]+(.+)")
+  return url.replace domainMatch, '$1'
+
+
 getImageURL = (url) ->
   # Make URL relative to root. Kitt makes all URLs absolute before passing them
   # to us. But jQuery needs a (semi-)exact string match so we have to search
   # for relative URLs too.
-  uri = new URI(url)
-  relativeURL = uri.relativeTo(uri.scheme() + '://' + uri.authority())
-    .toString()
+  relativeURL = getRelativeUrl(url)
   $img = $("*[src$='#{url}'], *[href$='#{url}'], " +
     "*[src$='#{relativeURL}'], *[href$='#{relativeURL}']")
 
@@ -28,18 +32,14 @@ getImageURL = (url) ->
 reloadCSSBackgroundImages = ->
   console.log 'reloading CSS background images...'
   for sheet in document.styleSheets
-    console.log '1'
     for rule  in (r for r in sheet.cssRules)
       do (rule) ->
-        console.log '2', rule.style
         if rule?.style?['background-image']
           old = rule.style['background-image']
-          console.log 'old', old
           chrome.runtime.sendMessage {
             command: 'url:whitelist'
             url: old.replace(/url\((.*)\)/, '$1')
           }, ->
-          console.log '3'
           rule.style['background-image'] = ''
           setTimeout ->
             console.log 'reloading bkg image rule'
@@ -48,15 +48,20 @@ reloadCSSBackgroundImages = ->
 
 
 reloadImage = (url) ->
-  console.log 'reloading url', url
+  uri = new URI(url)
+  relativeURL = getRelativeUrl(url)
 
-  $img = $("img[src='#{url}']")
+  $img = $("img[src='#{url}'], img[src$='#{relativeURL}']")
+  console.log $img.length
   return unless $img.length
 
   # Flash `src` => force reload.
   imgSrc = $img.attr('src')
   $img.attr('src', '')
-  setTimeout (-> $img.attr('src', imgSrc)), 100
+  setTimeout ->
+    console.log 'setting old img src', imgSrc
+    $img.attr('src', imgSrc)
+  , 100
 
 
 chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
@@ -80,10 +85,7 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
       break
 
     when 'reload:background'
-      try
-        reloadCSSBackgroundImages()
-      catch err
-        console.log err
+      reloadCSSBackgroundImages()
 
 
 $ ->
