@@ -1,5 +1,6 @@
 $ = require('jquery')
 URI = require('URIjs')
+_ = require('lodash')
 
 
 getImageURL = (url) ->
@@ -22,6 +23,28 @@ getImageURL = (url) ->
   return null unless $img.length
 
   return $img.attr('src')
+
+
+reloadCSSBackgroundImages = ->
+  console.log 'reloading CSS background images...'
+  for sheet in document.styleSheets
+    console.log '1'
+    for rule  in (r for r in sheet.cssRules)
+      do (rule) ->
+        console.log '2', rule.style
+        if rule?.style?['background-image']
+          old = rule.style['background-image']
+          console.log 'old', old
+          chrome.runtime.sendMessage {
+            command: 'url:whitelist'
+            url: old.replace(/url\((.*)\)/, '$1')
+          }, ->
+          console.log '3'
+          rule.style['background-image'] = ''
+          setTimeout ->
+            console.log 'reloading bkg image rule'
+            rule.style['background-image'] = old
+          , 100
 
 
 reloadImage = (url) ->
@@ -51,10 +74,16 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
       break
 
     # Then we "flash" the `src` attribute to reload the image.
-    when 'reloadImage'
+    when 'reload:image'
       reloadImage(request.src)
       sendResponse(null)
       break
+
+    when 'reload:background'
+      try
+        reloadCSSBackgroundImages()
+      catch err
+        console.log err
 
 
 $ ->

@@ -41,16 +41,9 @@ getHeadersForUrl = (url, callback) ->
     callback?(err)
 
 
-###
-chrome.webRequest.onHeadersReceived.addListener (details) ->
-  return unless details['responseHeaders']?['Content-Length']?
-  console.log 'type', typeof(details['responseHeaders']['Content-Length'])
-  try
-    size = parseInt(details['responseHeaders']['Content-Length'])
-  catch e
-    console.log 'exception'
-  g_data.totalDownloaded += (size or 0)
-###
+#chrome.webRequest.onHeadersReceived.addListener (details) ->
+#  size = parseInt(details['responseHeaders']?['Content-Length']?)
+#  g_data.totalDownloaded += (size or 0)
 
 escapeRegExp = (str) ->
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
@@ -58,12 +51,13 @@ escapeRegExp = (str) ->
 
 chrome.webRequest.onBeforeRequest.addListener (details) ->
   domain = details.url.split('?')[0]
-
   # Is the domain whitelisted?
   allowed = _.find g_allowedURLs, ({url}) ->
     domain.match(new RegExp(".*#{escapeRegExp(url)}$"))
   shouldBlock = Boolean(domain.match(_imgExtensionsRegexp)) &&
     not allowed && details.method == 'GET'
+
+  console.log 'url', details.url, shouldBlock
 
   if shouldBlock
     # Determine the size of the blocked image (to show stats to the user).
@@ -90,6 +84,7 @@ menu = chrome.contextMenus.create({
 
 
 chrome.contextMenus.onClicked.addListener (info, tab) ->
+  console.log 'info', info
   return unless (info.menuItemId == menu)
   sendMessage {command: 'getImageURL', src: info.linkUrl}, (url) ->
     return unless url?
@@ -97,7 +92,7 @@ chrome.contextMenus.onClicked.addListener (info, tab) ->
     # Whitelist the URL domain before reloading (otherwise it would just
     # get blocked again, duh).
     g_allowedURLs.push({url: encodeURI(domain), tabId: tab.id})
-    sendMessage {command: 'reloadImage', src: url}
+    sendMessage {command: 'reload:image', src: url}
 
 
 chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
@@ -113,3 +108,7 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
         received: g_data.totalDownloaded
       }
       break
+    when 'url:whitelist'
+      console.log 'whitelisting URL', request.url
+      g_allowedURLs.push({url: encodeURI(request.url)})
+
