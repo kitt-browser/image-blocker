@@ -15,3 +15,8 @@ $ ->
 
   $('button.bkg-load').on 'click', ->
     sendMessage {command: 'reload:background'}
+    window.close()
+
+  $('button.all-images-load').on 'click', ->
+    sendMessage {command: 'reload:all'}
+    window.close()

@@ -41,9 +41,11 @@ getHeadersForUrl = (url, callback) ->
     callback?(err)
 
 
-#chrome.webRequest.onHeadersReceived.addListener (details) ->
-#  size = parseInt(details['responseHeaders']?['Content-Length']?)
-#  g_data.totalDownloaded += (size or 0)
+chrome.webRequest.onHeadersReceived.addListener (details) ->
+  size = parseInt(details['responseHeaders']?['Content-Length'])
+  console.log 'size', details['responseHeaders']?['Content-Length'], size
+  g_data.totalDownloaded += (size or 0)
+  return
 
 escapeRegExp = (str) ->
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
@@ -69,6 +71,8 @@ chrome.webRequest.onBeforeRequest.addListener (details) ->
       size = Number(matches[0].split(':')[1])
       g_data.totalBlocked += size
 
+  if shouldBlock then console.log('blocking url', details.url)
+
   return {cancel: shouldBlock }
 , {
   urls: ["<all_urls>"]
@@ -84,6 +88,7 @@ menu = chrome.contextMenus.create({
 
 
 whitelistUrl = (url) ->
+  return unless url
   domain = encodeURI(url.split('?')[0])
   if g_allowedURLs.indexOf(domain) < 0
     g_allowedURLs.push({url: domain})
@@ -115,4 +120,5 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
       # TODO: We're getting junk "urls" such as "initial" or "none" here.
       # Filter what we're sending.
       whitelistUrl(request.url)
+      sendResponse(null)
 

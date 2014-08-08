@@ -51,7 +51,7 @@ reloadImage = (url) ->
   relativeURL = getRelativeUrl(url)
 
   $img = $("img[src='#{url}'], img[src$='#{relativeURL}']")
-  console.log $img.length
+  console.log 'found images:', $img.length
   return unless $img.length
 
   # Flash `src` => force reload.
@@ -61,6 +61,19 @@ reloadImage = (url) ->
     console.log 'setting old img src', imgSrc
     $img.attr('src', imgSrc)
   , 100
+
+
+reloadAllImages = ->
+  console.log "reloading all images"
+  $('img').each ->
+    url = $(this).attr('src')
+    return unless url
+    chrome.runtime.sendMessage {
+      command: 'url:whitelist'
+      url: url
+    }, ->
+      reloadImage url
+  reloadCSSBackgroundImages()
 
 
 chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
@@ -85,6 +98,9 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
 
     when 'reload:background'
       reloadCSSBackgroundImages()
+
+    when 'reload:all'
+      reloadAllImages()
 
 
 $ ->
