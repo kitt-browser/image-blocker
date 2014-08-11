@@ -2,6 +2,8 @@ $ = require('jquery')
 URI = require('URIjs')
 _ = require('lodash')
 
+console.log 'Content script loading...'
+
 
 getRelativeUrl = (url) ->
   uri = new URI(url)
@@ -32,7 +34,8 @@ getImageURL = (url) ->
 reloadCSSBackgroundImages = ->
   console.log 'reloading CSS background images...'
   for sheet in document.styleSheets
-    for rule  in (r for r in sheet.cssRules)
+    continue unless sheet.cssRules?
+    for rule in (r for r in sheet.cssRules)
       do (rule) ->
         if rule?.style?['background-image']
           old = rule.style['background-image']
@@ -44,6 +47,7 @@ reloadCSSBackgroundImages = ->
           setTimeout ->
             rule.style['background-image'] = old
           , 100
+
 
 
 reloadImage = (url) ->
