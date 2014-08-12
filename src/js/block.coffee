@@ -1,8 +1,12 @@
 $ = require('jquery')
 _ = require('lodash')
 URI = require('URIjs')
+common = require('./common.coffee')
+
+g_settings = require('./default.coffee')
 
 $.support.cors = true
+
 
 # We don't have `accept` header yet so as a temporary workaround
 # we're blocking by extension.
@@ -52,6 +56,10 @@ escapeRegExp = (str) ->
 
 
 chrome.webRequest.onBeforeRequest.addListener (details) ->
+  # Check if we should block on this type of connection.
+  if g_settings.reachability.indexOf(details.reachability) < 0
+    return
+
   domain = encodeURI(details.url.split('?')[0])
   # Is the domain whitelisted?
   allowed = _.find g_allowedURLs, ({url}) ->
@@ -59,7 +67,7 @@ chrome.webRequest.onBeforeRequest.addListener (details) ->
   shouldBlock = Boolean(domain.match(_imgExtensionsRegexp)) &&
     not allowed && details.method == 'GET'
 
-  # console.log 'url', details.url, shouldBlock
+  console.log 'url', details, shouldBlock
 
   if shouldBlock
     # Determine the size of the blocked image (to show stats to the user).
@@ -108,17 +116,31 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
   switch (request.command)
     when 'clean'
       g_allowedURLs = []
-      #_.filter allowedURLs, ({tabId}) -> tabId != sender.tab.id
-      break
+
     when 'data:info'
       sendResponse {
         blocked: g_data.totalBlocked
         received: g_data.totalDownloaded
       }
-      break
+
     when 'url:whitelist'
       # TODO: We're getting junk "urls" such as "initial" or "none" here.
       # Filter what we're sending.
       whitelistUrl(request.url)
       sendResponse(null)
+
+    when 'reachability:set'
+      reachability = []
+      if request.block.cellular then reachability.push 'Cellular'
+      if request.block.wifi then reachability.push 'WiFi'
+
+      common.getFromStorage 'settings', (settings = g_settings) ->
+        settings.reachability = reachability
+        common.saveToStorage 'settings', settings
+        g_settings = settings
+
+    when 'settings:get'
+      common.getFromStorage 'settings', (settings = g_settings) ->
+        sendResponse settings
+      return true
 
