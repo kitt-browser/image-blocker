@@ -29,6 +29,11 @@ g_data = {
 }
 
 
+common.getFromStorage 'totalBlocked', (err, blocked) ->
+  console.log 'loaded blocked', blocked
+  g_data.totalBlocked = (blocked or 0)
+
+
 sendMessage = (msg, callback) ->
   chrome.tabs.query {active: true, currentWindow: true}, (tabs) ->
     chrome.tabs.sendMessage tabs[0].id, msg, (response) ->
@@ -47,7 +52,6 @@ getHeadersForUrl = (url, callback) ->
 
 chrome.webRequest.onHeadersReceived.addListener (details) ->
   size = parseInt(details['responseHeaders']?['Content-Length'])
-  console.log 'size', details['responseHeaders']?['Content-Length'], size
   g_data.totalDownloaded += (size or 0)
   return
 
@@ -78,6 +82,7 @@ chrome.webRequest.onBeforeRequest.addListener (details) ->
       return unless matches?.length > 0
       size = Number(matches[0].split(':')[1])
       g_data.totalBlocked += size
+      common.saveToStorage 'totalBlocked', g_data.totalBlocked
 
   if shouldBlock then console.log('blocking url', details.url)
 
@@ -89,7 +94,7 @@ chrome.webRequest.onBeforeRequest.addListener (details) ->
 
 menu = chrome.contextMenus.create({
   id: "imageBlockerMenu"
-  title: 'Load image',
+  title: 'Load Image',
   contexts : ['link']
   enabled: true
 })
@@ -144,3 +149,8 @@ chrome.runtime.onMessage.addListener (request, sender, sendResponse) ->
         sendResponse settings
       return true
 
+    when 'reset'
+      g_data.totalBlocked = 0
+      common.saveToStorage 'totalBlocked', 0, ->
+        sendResponse()
+      return true

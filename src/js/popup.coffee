@@ -7,6 +7,22 @@ sendMessage = (msg, callback) ->
       console.log(response)
       callback?(response)
 
+getBytesWithUnit = (bytes) ->
+  if isNaN(bytes) then return
+  units = [
+    " bytes", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB"
+  ]
+  amountOf2s = Math.floor(Math.log(+bytes) / Math.log(2))
+  if amountOf2s < 1
+    amountOf2s = 0
+  i = Math.floor(amountOf2s / 10)
+  bytes = +bytes / Math.pow(2, 10 * i)
+  
+  # Rounds to 3 decimals places.
+  if bytes.toString().length > bytes.toFixed(3).toString().length
+    bytes = bytes.toFixed(3)
+  bytes + units[i]
+
 
 $ ->
   chrome.runtime.sendMessage {command:'settings:get'}, (settings) ->
@@ -15,9 +31,14 @@ $ ->
       (settings.reachability.length == 1 &&
       settings.reachability.indexOf('Cellular') >= 0)
 
-  chrome.runtime.sendMessage {command: 'data:info'}, (obj) ->
-    $('.totalBlocked .data').html((obj.blocked/1024).toFixed(2) + ' KB')
-    $('.totalReceived .data').html((obj.received/1024).toFixed(2) + ' KB')
+  updateStats = ->
+    chrome.runtime.sendMessage {command: 'data:info'}, (obj) ->
+      $('.totalBlocked .data').html(getBytesWithUnit(obj.blocked))
+      #$('.totalReceived .data').html((obj.received/1024).toFixed(2) + ' KB')
+
+  $('button.reset').on 'click', ->
+    chrome.runtime.sendMessage {command:'reset'}, ->
+      updateStats()
 
   $('button.bkg-load').on 'click', ->
     sendMessage {command: 'reload:background'}
@@ -37,3 +58,5 @@ $ ->
         wifi: (not onlyBlockCellular)
       }
     }, ->
+
+  updateStats()
