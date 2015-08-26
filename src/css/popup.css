@@ -140,6 +140,7 @@ li button.reset {
   width: auto;
   float: right;
   padding: 0 10px;
+  height: 43px;
   background: #fc3d39;
   color: #fff;
 }
