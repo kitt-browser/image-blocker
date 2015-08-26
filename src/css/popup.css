@@ -28,7 +28,7 @@ section h2 {
   font-weight: 400;
   opacity: .53;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 20px;
   display: block;
 }
 
@@ -37,7 +37,7 @@ ul {
   border-style: solid;
   border-color: #c8c7cc;
   list-style: none;
-  padding: 0 16px;
+  padding: 0 20px;
   margin: 0;
   background: #fff;
 }
