@@ -12,20 +12,33 @@
 
   <body>
     <section>
-      <div class="totalBlocked">Total blocked: <span class="data"/></div>
-      <button type="button" class="button reset">Reset</button>
-      <!--div class="totalReceived">Total received: <span class="data"/></div-->
+      <h2>Controls</h2>
+      <ul>
+        <li><button type="button" class="button bkg-load">Load background images</button></li>
+        <li><button type="button" class="button all-images-load">Load all images</button></li>
+      </ul>
     </section>
     <section>
-      <button type="button" class="button bkg-load">Load background images</button>
-      <button type="button" class="button all-images-load">Load all images</button>
+      <h2>Settings</h2>
+      <ul>
+        <li>
+          <span>Block while on cellular only</span>
+          <div class="reachability slideThree">
+            <input type="checkbox" value="None" id="slideThree" name="check" />
+            <label for="slideThree"></label>
+          </div>
+        </li>
+      </ul>
     </section>
     <section>
-      <h4>Block while on cellular only</h4>
-      <div class="reachability slideThree">	
-        <input type="checkbox" value="None" id="slideThree" name="check" />
-        <label for="slideThree"></label>
-      </div>
+      <h2>Statistics</h2>
+      <ul>
+        <li>
+          <div class="totalBlocked textLabel">Total blocked: <span class="data"/></div>
+          <button type="button" class="button reset">Reset</button>
+          <!--div class="totalReceived">Total received: <span class="data"/></div-->
+        </li>
+      </ul>
     </section>
   </body>
 </html>
